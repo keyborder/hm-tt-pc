@@ -1,29 +1,59 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
+import store from '@/store'
+
+import Login from '@/views/login'
+import Home from '@/views/home'
+import Welcome from '@/views/welcome'
+import NotFound from '@/views/404'
+import Article from '@/views/article'
+import Image from '@/views/image'
+import Publish from '@/views/publish'
+import Comment from '@/views/comment'
+import Setting from '@/views/setting'
+import Fans from '@/views/fans'
 
 Vue.use(VueRouter)
 
-const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'about',
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/About.vue')
-  }
-]
-
 const router = new VueRouter({
-  mode: 'history',
-  base: process.env.BASE_URL,
-  routes
+  routes: [
+    // 登录
+    { path: '/login', component: Login },
+    // 首页
+    {
+      path: '/',
+      component: Home,
+      children: [
+        // 欢迎页面
+        { path: '/', component: Welcome },
+        // 内容管理
+        { path: '/article', component: Article },
+        // 素材管理
+        { path: '/image', component: Image },
+        // 发布与编辑文章
+        { path: '/publish', component: Publish },
+        // 评论管理
+        { path: '/comment', component: Comment },
+        // 个人设置
+        { path: '/setting', component: Setting },
+        // 粉丝管理
+        { path: '/fans', component: Fans }
+      ]
+
+    },
+    { path: '*', component: NotFound }
+  ]
+})
+
+// 前置导航守卫
+router.beforeEach((to, from, next) => {
+  // to 去哪里
+  // from 来自哪里
+  // next 放行|指定跳转路由
+  // 判断如果是除去登录页面外其他的路由且当前没有登录，拦截到登录
+  if (to.path !== '/login' && !store.getUser().token) return next('/login')
+  // 其他情况都是放行
+  next()
 })
 
 export default router
